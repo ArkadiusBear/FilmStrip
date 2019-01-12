@@ -1,15 +1,40 @@
 [CmdletBinding()]
 Param (
+    [Parameter(Mandatory=$true)]
     [string] $VideoFile,
-    [ValidateRange(100,4000)]
-    [int] $Height = 500,
-    [ValidateRange(100,4000)]
-    [int] $Width = 1500,
+    [ValidateSet("Tiny","Small","Medium","Large","Massive")]
+    [string] $Size = 'Medium',
+    [ValidateRange(1,10)]
+    [int] $Ratio = 3,
     [int] $Density = 200,
     [ValidateSet("Landscape","Portrait")]
     [string] $Orientation = "Landscape",
     [switch] $KeepFrames
 )
+
+# Enum for size specified
+enum Size {
+    Tiny = 100;
+    Small = 300;
+    Medium = 500;
+    Large = 1000;
+    Massive = 2000;
+}
+
+# Set width and height using the size and orientation
+Switch ($Orientation) {
+    'Landscape' {
+        $Width = ([Size]::$Size.value__)*$Ratio
+        $Height = [Size]::$Size.value__
+    }
+    'Portrait' {
+        $Width = [Size]::$Size.value__
+        $Height = ([Size]::$Size.value__)*$Ratio
+    }
+    default {
+        throw "Orientation not set"
+    }
+}
 
 # Clear screen 
 Clear-Host
@@ -67,7 +92,6 @@ For ($i=0; $i -lt $Density; $i++) {
         default {
             throw "Orientation not set"
         }
-
     }
 
     # Draw rectangle onto main image
