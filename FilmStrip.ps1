@@ -2,10 +2,12 @@
 Param (
     [string] $VideoFile,
     [ValidateRange(100,4000)]
-    [int] $Height = 1500,
+    [int] $Height = 500,
     [ValidateRange(100,4000)]
-    [int] $Width = 500,
-    [int] $Density = 150,
+    [int] $Width = 1500,
+    [int] $Density = 200,
+    [ValidateSet("Landscape","Portrait")]
+    [string] $Orientation = "Landscape",
     [switch] $KeepFrames
 )
 
@@ -52,9 +54,23 @@ For ($i=0; $i -lt $Density; $i++) {
     $hexCodeArg = '"' + $hexCode + '"'
     Write-Verbose "Obtained average hex colour $hexCode for frame $i"
 
-    # Draw a rectangle on the main image at the correct location with the correct fill
-    $coord1 = '0,' + [string](($Height/$Density)*$i)
-    $coord2 = [string]$Width + ',' + [string](($Height/$Density)*($i+1))
+    # Calculate coordinates for rectangle depending on orientation
+    Switch ($Orientation) {
+        'Landscape' {
+            $coord1 = [string](($Width/$Density)*$i) + ',0'
+            $coord2 = [string](($Width/$Density)*($i+1)) + ',' + [string]$Height
+        }
+        'Portrait' {
+            $coord1 = '0,' + [string](($Height/$Density)*$i)
+            $coord2 = [string]$Width + ',' + [string](($Height/$Density)*($i+1))
+        }
+        default {
+            throw "Orientation not set"
+        }
+
+    }
+
+    # Draw rectangle onto main image
     & $PSScriptRoot\binaries\ImageMagick\magick.exe convert $outputFilePath -stroke none -fill $hexCodeArg -draw "rectangle $coord1 $coord2" $outputFilePath
     Write-Verbose "Added rectangle to main image from $coord1 to $coord2 using fill $hexCode"
 
