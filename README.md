@@ -37,6 +37,6 @@ Medium | 500
 Large | 1000
 Massive | 2000
 
-Note that although the width and height have limits set on them, they can be easily removed to create a huge image but obviously a larger image will slow down the process. Also note that there is not much point having a density greater than the height of the image as it will try and create a strip smaller than a pixel in width.
+Note also that if a density is entered larger than the width/height of the image (depending on the orientation), the density will simply be set to the width/height as there is no point trying to draw strips less than a pixel in width.
 
 Originally I was using the PNG format for the final image file however I switched to BMP as this greatly improved the speed of the overall process however this does create a far greater file size but as it's only a single image file this shouldn't be much of an issue. The frames created by ffmpeg are all in PNG as the program only needs the average colour, image quality is not much of a concern.
