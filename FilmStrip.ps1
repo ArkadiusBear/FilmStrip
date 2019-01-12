@@ -15,6 +15,11 @@ Param (
 # Clear screen 
 Clear-Host
 
+# First test filepath given
+if (!(Test-Path -Path $VideoFile -PathType leaf)) {
+    throw "Not a valid file"
+}
+
 # Enum for size specified
 enum Size {
     Tiny = 100;
@@ -29,19 +34,24 @@ Switch ($Orientation) {
     'Landscape' {
         $Width = ([Size]::$Size.value__)*$Ratio
         $Height = [Size]::$Size.value__
+
+        # If density is greater than width, no point drawing rectangles less than a pixel thick, set to width
+        if ($Density -gt $Width) {
+            $Density = $Width
+        }
     }
     'Portrait' {
         $Width = [Size]::$Size.value__
         $Height = ([Size]::$Size.value__)*$Ratio
+
+        # If density is greater than height, no point drawing rectangles less than a pixel thick, set to height
+        if ($Density -gt $Height) {
+            $Density = $Height 
+        }
     }
     default {
         throw "Orientation not set"
     }
-}
-
-# First test filepath given
-if (!(Test-Path -Path $VideoFile -PathType leaf)) {
-    throw "Not a valid file"
 }
 
 # Creates output filename from the video file path
