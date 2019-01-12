@@ -21,10 +21,21 @@ The script has multiple parameters, some mandatory and some optional:
 Parameter | Mandatory | Type | Description
 --- | --- | --- | ---
 -VideoFile | Yes | String | Path to the video file, has to be a valid path
--Height | No | Int | Height of final image in pixels, default value is 1500, can be within the range of 100 to 4000
--Width | No | Int | Width of final image in pixels, default value is 500, can be within the range of 100 to 4000
--Density | No | Int | The number of strips created, default value is 150. Greater number will take longer as more frames have to be extracted and added to final image
--KeepFrames | No | Switch | Decides whether to keep the frames generated, default is false
+-Size | No | String | Size of final image, different sizes are given below in separate table, default is Medium
+-Ratio | No | Int | Ratio of Width to Height, default is 3, minimum value is 1, maximum value is 10
+-Density | No | Int | The number of strips created, default value is 200. Greater number will take longer as more frames have to be extracted and added to final image
+-Orientation | No | String | Must be either Landscape or Portrait, default being Landscape
+-KeepFrames | No | Switch | Decides whether to keep the frames generated, default is false (delete temp frames and folder)
+
+Final image size is determined using the Size, Ratio and orientation. The Size parameter always determines the length of the shorter side and the Ratio is used to calculate the length of the longer side. For example, using a Medium size with a ratio of 3 and an orientation of landscape (i.e. all the defaults) you will generate an image 1500 pixels in width and 500 pixels in height. Note that although the ratio and size have a maximum, generating a image 2000x20000 will not only take a long time but will be a big file:
+
+Value | Pixels
+--- | ---
+Tiny | 100
+Small | 300
+Medium | 500
+Large | 1000
+Massive | 2000
 
 Note that although the width and height have limits set on them, they can be easily removed to create a huge image but obviously a larger image will slow down the process. Also note that there is not much point having a density greater than the height of the image as it will try and create a strip smaller than a pixel in width.
 
