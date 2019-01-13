@@ -66,13 +66,13 @@ Write-Verbose "Created temporary file for frames at $PSScriptRoot\TempScreenCaps
 
 # Get the total time in seconds of the video file
 $totalTime = [int](& $PSScriptRoot\binaries\ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 $VideoFile)
-Write-Verbose "Creating final image measuring $($Width)x$($Height) for file $VideoFile which is $totalTime seconds long"
 
 # Create size variable
 $imageSize = [string]$Width + 'x' + [string]$Height
 
 # Create final image base canvas to add strips to
 & $PSScriptRoot\binaries\ImageMagick\magick.exe convert -size $imageSize 'xc:#000000' $outputFilePath
+Write-Verbose "Creating final image measuring $($Width)x$($Height) for file $VideoFile which is $totalTime seconds long"
 
 # Generates all the frames, average colour and creates final image
 For ($i=0; $i -lt $Density; $i++) {
