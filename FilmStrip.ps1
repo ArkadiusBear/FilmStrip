@@ -2,7 +2,7 @@
 Param (
     [Parameter(Mandatory=$true)]
     [string] $VideoFile,
-    [ValidateSet("Tiny","Small","Medium","Large","Massive")]
+    [ValidateSet("Tiny","Small","Medium","Large","Massive","auto")]
     [string] $Size = 'Medium',
     [ValidateRange(1,10)]
     [int] $Ratio = 3,
@@ -29,11 +29,22 @@ enum Size {
     Massive = 2000;
 }
 
+# Get the total time in seconds of the video file
+$totalTime = [int](& $PSScriptRoot\binaries\ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 $VideoFile)
+
 # Set width and height using the size and orientation
 Switch ($Orientation) {
     'Landscape' {
-        $Width = ([Size]::$Size.value__)*$Ratio
-        $Height = [Size]::$Size.value__
+
+        # If $Size is set to auto, set the $Width to $totalTime
+        if ($Size -eq 'auto') {
+            $Width = [int]::$totalTime.value__
+            $Height = 500
+            $Density = $Width
+        } else {
+            $Width = ([Size]::$Size.value__)*$Ratio
+            $Height = [Size]::$Size.value__
+        }
 
         # If density is greater than width, no point drawing rectangles less than a pixel thick, set to width
         if ($Density -gt $Width) {
@@ -41,8 +52,17 @@ Switch ($Orientation) {
         }
     }
     'Portrait' {
-        $Width = [Size]::$Size.value__
-        $Height = ([Size]::$Size.value__)*$Ratio
+
+        # If $Size is set to auto, set the $Width to $totalTime
+        if ($Size -eq 'auto') {
+            $Width = 500
+            $Height = [int]::$totalTime.value__
+            $Density = $Height 
+        } else {
+            $Width = [Size]::$Size.value__
+            $Height = ([Size]::$Size.value__)*$Ratio
+        }
+        
 
         # If density is greater than height, no point drawing rectangles less than a pixel thick, set to height
         if ($Density -gt $Height) {
@@ -58,19 +78,18 @@ Switch ($Orientation) {
 $outputBasePath = Split-Path -Path $VideoFile -Parent
 $outputFileName = ((Split-Path -Path $VideoFile -Leaf).Split('.'))[0] + '.bmp'
 $outputFilePath = Join-Path -Path $outputBasePath -ChildPath $outputFileName
+$finalFileName = ((Split-Path -Path $VideoFile -Leaf).Split('.'))[0] + '.png'
+$finalFilePath = Join-Path -Path $outputBasePath -ChildPath $finalFileName
 Write-Verbose "Ouput image file will be save to $outputFilePath"
 
 # Create temporary folder if it doesn't exist already
 New-Item -ItemType Directory -Path $PSScriptRoot\TempScreenCaps -Force | Out-Null
 Write-Verbose "Created temporary file for frames at $PSScriptRoot\TempScreenCaps"
 
-# Get the total time in seconds of the video file
-$totalTime = [int](& $PSScriptRoot\binaries\ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 $VideoFile)
-
 # Create size variable
 $imageSize = [string]$Width + 'x' + [string]$Height
 
-# Create final image base canvas to add strips to
+# Create final image base canvas to add strips to 
 & $PSScriptRoot\binaries\ImageMagick\magick.exe convert -size $imageSize 'xc:#000000' $outputFilePath
 Write-Verbose "Creating final image measuring $($Width)x$($Height) for file $VideoFile which is $totalTime seconds long"
 
@@ -120,8 +139,11 @@ if (!($KeepFrames)) {
     Write-Verbose "Removed temporary frame files and folder"
 }
 
+# Converts final image from bmp to png to save space
+& $PSScriptRoot\binaries\ImageMagick\magick.exe convert $outputFilePath $finalFilePath
+
 # Displays final result
-& $outputFilePath
+& $finalFilePath
 Write-Verbose "Opening final image file from $outputFilePath"
 
 
